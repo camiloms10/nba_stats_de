@@ -14,27 +14,21 @@ from airflow.providers.google.cloud.operators.bigquery import (
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 
+from nba_api.stats.static import players
+import pandas as pd
+
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 
-dataset_file = "yellow_tripdata_2021-01.csv.gz"
-dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/{dataset_file}"
+parquet_file = "players.parquet"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-parquet_file = dataset_file.replace(".csv.gz", ".parquet")
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "trips_data_all")
-
-src_file_suffixes = (".csv", ".csv.gz")
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "nba_stats_all")
 
 
-def format_to_parquet(src_file):
-    if not src_file.endswith(src_file_suffixes):
-        return logging.error(
-            "Can only accept source files in CSV or CSV.GZ format, for the moment"
-        )
-    with gzip.open(src_file) as f:
-        table = pv.read_csv(f)
-    pq.write_table(table, src_file.replace(".csv.gz", ".parquet"))
+def format_to_parquet():
+    players_table = pd.DataFrame(players.get_players())
+    players_table.to_parquet(parquet_file)
 
 
 # NOTE: takes 20 mins, at an upload speed of 800kbps. Faster if your internet has a better upload speed
@@ -63,27 +57,21 @@ default_args = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="data_ingestion_gcs_dag",
-    schedule_interval="@daily",
+    dag_id="data_ingestion_players_dag",
+    schedule_interval="@weekly",
     default_args=default_args,
     catchup=False,
     max_active_runs=1,
-    tags=["dtc-de"],
+    tags=["dtc-nba-de"],
 ) as dag:
-    download_dataset_task = BashOperator(
-        task_id="download_dataset_task",
-        bash_command=f"curl -sSL {dataset_url} > {path_to_local_home}/{dataset_file}",
-    )
-
     format_to_parquet_task = PythonOperator(
         task_id="format_to_parquet_task",
         python_callable=format_to_parquet,
         op_kwargs={
-            "src_file": f"{path_to_local_home}/{dataset_file}",
+            "src_file": f"{path_to_local_home}/{parquet_file}",
         },
     )
 
-    # TODO: Homework - research and try XCOM to communicate output values between 2 tasks/operators
     local_to_gcs_task = PythonOperator(
         task_id="local_to_gcs_task",
         python_callable=upload_to_gcs,
@@ -100,7 +88,7 @@ with DAG(
             "tableReference": {
                 "projectId": PROJECT_ID,
                 "datasetId": BIGQUERY_DATASET,
-                "tableId": "external_table",
+                "tableId": "nba_players",
             },
             "externalDataConfiguration": {
                 "sourceFormat": "PARQUET",
@@ -109,9 +97,4 @@ with DAG(
         },
     )
 
-    (
-        download_dataset_task
-        >> format_to_parquet_task
-        >> local_to_gcs_task
-        >> bigquery_external_table_task
-    )
+    (format_to_parquet_task >> local_to_gcs_task >> bigquery_external_table_task)
