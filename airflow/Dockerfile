@@ -39,3 +39,28 @@ COPY scripts scripts
 RUN chmod +x scripts
 
 USER $AIRFLOW_UID
+
+## Spark files and Variables
+ARG SPARK_VERSION=3.2.3
+ENV SPARK_HOME=/opt/spark
+ENV PATH="${SPARK_HOME}/bin/:${PATH}"
+RUN DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz" \
+    && TMP_DIR="$(mktemp -d)" \
+    && curl -fL "${DOWNLOAD_URL}" --output "${TMP_DIR}/spark.tgz" \
+    && mkdir -p "${SPARK_HOME}" \
+    && tar xzf "${TMP_DIR}/spark.tgz" -C "${SPARK_HOME}" --strip-components=1 \
+    && rm -rf "${TMP_DIR}"
+## Finish Spark files and Variables
+
+## Start Python packages
+COPY requirements.txt .
+ENV PYTHONPATH="/usr/local/bin/python"
+ENV PYTHONPATH="${SPARK_HOME}/python/:$PYTHONPATH"
+ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.3-src.zip:$PYTHONPATH"
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+## Finish Python packages
+
+WORKDIR $AIRFLOW_HOME
+
+USER $AIRFLOW_UID

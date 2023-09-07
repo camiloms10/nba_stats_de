@@ -58,13 +58,15 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- nba-api}
     GOOGLE_APPLICATION_CREDENTIALS: /.google/credentials/google_credentials.json
     AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=/.google/credentials/google_credentials.json'
-    GCP_PROJECT_ID: 'de-project-396820'
-    GCP_GCS_BUCKET: 'import-bucket-camiloms10'
+    GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+    GCP_GCS_BUCKET: ${GCP_GCS_BUCKET}
+    GCP_DATAPROC_CLUSTER: ${GCP_PROJECT_DATAPROC_CLUSTER_NAME}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./.google/credentials/:/.google/credentials:ro
+    - ../spark:/opt/airflow/sources
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     redis:

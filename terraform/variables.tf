@@ -1,16 +1,15 @@
-locals {
-  data_lake_bucket = "import-bucket-camiloms10"
+variable "data_lake_bucket" {
+  description = "Name of the data lake in GCS where to store the raw files"
+  type        = string
 }
 
 variable "project" {
   description = "Your GCP Project ID"
   type        = string
-  default     = "de-project-396820"
 }
 
 variable "region" {
   description = "Region for GCP resources. Choose as per your location: https://cloud.google.com/about/locations"
-  default     = "us-south1"
   type        = string
 }
 
