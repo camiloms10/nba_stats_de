@@ -1,0 +1,6 @@
+apache-airflow-providers-google
+pyarrow
+nba-api
+apache-airflow-providers-postgres
+pyspark==3.2.0
+pandas
