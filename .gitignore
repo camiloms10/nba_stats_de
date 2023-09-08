@@ -163,7 +163,7 @@ cython_debug/
 test/
 
 #google credentials
-.google/*
+airflow/.google/
 
 #scheduler logs and plugins
 logs/
