@@ -173,3 +173,6 @@ plugins/
 #terraform
 .terraform*
 terraform.*
+
+#dbt
+.dbt*

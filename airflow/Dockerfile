@@ -1,20 +1,32 @@
+
 # First-time build can take upto 10 mins.
 
 FROM apache/airflow:2.2.3
-
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 ENV AIRFLOW_HOME=/opt/airflow
 
 USER root
 RUN apt-get update -qq && apt-get install vim -qqq
 # git gcc g++ -qqq
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+## jdk files and Variables
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+    openjdk-11-jre-headless \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV PATH="${JAVA_HOME}/bin/:${PATH}"
+## Finish jdk files and Variables
 
 # Ref: https://airflow.apache.org/docs/docker-stack/recipes.html
 
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
+
+## GCP SDK files and Variables
 ARG CLOUD_SDK_VERSION=322.0.0
 ENV GCLOUD_HOME=/home/google-cloud-sdk
 
@@ -32,19 +44,13 @@ RUN DOWNLOAD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/goo
     --quiet \
     && rm -rf "${TMP_DIR}" \
     && gcloud --version
-
-WORKDIR $AIRFLOW_HOME
-
-COPY scripts scripts
-RUN chmod +x scripts
-
-USER $AIRFLOW_UID
+## Finish GCP SDK files and variables
 
 ## Spark files and Variables
-ARG SPARK_VERSION=3.2.3
+ARG SPARK_VERSION=3.3.3
 ENV SPARK_HOME=/opt/spark
 ENV PATH="${SPARK_HOME}/bin/:${PATH}"
-RUN DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz" \
+RUN DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz" \
     && TMP_DIR="$(mktemp -d)" \
     && curl -fL "${DOWNLOAD_URL}" --output "${TMP_DIR}/spark.tgz" \
     && mkdir -p "${SPARK_HOME}" \

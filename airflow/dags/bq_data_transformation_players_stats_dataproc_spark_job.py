@@ -27,8 +27,8 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 parquet_file = "players.parquet"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "nba_stats_all")
-REGION = os.environ.get("GCP_REGION")
-DATAPROC_CLUSTER = os.environ.get("GCP_PROJECT_DATAPROC_CLUSTER")
+REGION = "us-south1"
+DATAPROC_CLUSTER = os.getenv("GCP_DATAPROC_CLUSTER", "dataproc")
 
 TEMP_STORAGE_PATH = os.getenv("TEMP_STORAGE_PATH", "not-found")
 SOURCES_PATH = os.getenv("SOURCES_PATH", "not-found")
@@ -72,6 +72,30 @@ def upload_to_gcs(bucket, object_name, local_file):
     blob.upload_from_filename(local_file)
 
 
+CLUSTER_CONFIG = {
+    "master_config": {
+        "num_instances": 1,
+        "machine_type_uri": "n1-standard-4",
+        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 1024},
+    },
+    "worker_config": {
+        "num_instances": 2,
+        "machine_type_uri": "n1-standard-4",
+        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 1024},
+    },
+    "secondary_worker_config": {
+        "num_instances": 1,
+        "machine_type_uri": "n1-standard-4",
+        "disk_config": {
+            "boot_disk_type": "pd-standard",
+            "boot_disk_size_gb": 1024,
+        },
+        "is_preemptible": True,
+        "preemptibility": "PREEMPTIBLE",
+    },
+}
+
+
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
     dag_id="bq_data_transformation_players_stats_dataproc_spark_job",
@@ -81,37 +105,12 @@ with DAG(
     max_active_runs=1,
     tags=["dtc-nba-de"],
 ) as dag:
-    """
-    # Not working because of permissions error from container calling gcloud
-    submit_dataproc_spark_job_task = BashOperator(
-        task_id="submit_dataproc_spark_job_task",
-        bash_command= ( f"gcloud dataproc jobs submit pyspark "
-        "../spark/process_year_tables.py "
-        f"--cluster={DATAPROC_CLUSTER} "
-        f"--region={REGION} "
-        f"--jars '../spark/spark-bigquery-with-dependencies_2.12-0.24.0.jar' "
-        f"-- {START_YEAR} {END_YEAR}"
-        )
-    )
-    """
-
     create_dataproc_cluster_task = DataprocCreateClusterOperator(
         task_id="create_dataproc_cluster_task",
         project_id=PROJECT_ID,
         cluster_name=DATAPROC_CLUSTER,
-        num_workers=2,
-        worker_machine_type="n1-standard-4",
+        cluster_config=CLUSTER_CONFIG,
         region=REGION,
-    )
-
-    upload_main_to_gcs_task = PythonOperator(
-        task_id=f"upload_main_to_gcs_task",
-        python_callable=upload_to_gcs,
-        op_kwargs={
-            "bucket": BUCKET,
-            "object_name": gcs_path_file,
-            "local_file": source_path_file,
-        },
     )
 
     submit_dataproc_spark_job_task = DataprocSubmitPySparkJobOperator(
@@ -135,7 +134,6 @@ with DAG(
 
     (
         create_dataproc_cluster_task
-        >> upload_main_to_gcs_task
         >> submit_dataproc_spark_job_task
         >> delete_dataproc_cluster_task
     )
