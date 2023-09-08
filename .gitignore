@@ -163,7 +163,7 @@ cython_debug/
 test/
 
 #google credentials
-.google/
+.google/*
 
 #scheduler logs and plugins
 logs/
