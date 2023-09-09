@@ -7,7 +7,7 @@
     Try changing "table" to "view" below
 */
 
-{{ config(materialized='view',
+{{ config(materialized='table',
         partition_by={
             "field": "DATE_TRUNC(GAME_DATE, YEAR)"
         },
