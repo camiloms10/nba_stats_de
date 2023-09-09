@@ -181,4 +181,5 @@ terraform.*
 target/
 dbt_packages/
 logs/
+example/
 # end dbt Cloud content

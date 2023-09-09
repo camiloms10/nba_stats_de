@@ -33,6 +33,10 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 parquet_file = "players_game_stats_current_year.parquet"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "STG_NBA_STATS_ALL")
+BIGQUERY_DATASET_DBT_PROD = os.environ.get(
+    "BIGQUERY_DATASET_DBT_DEV", "PROD_NBA_STATS_ALL"
+)
+
 
 # Getting current season first game date
 teamlogdata = teamgamelogs.TeamGameLogs(season_nullable=SeasonNullable.current_season)
@@ -109,12 +113,12 @@ default_args = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="gcs_players_stats_current_dag",
+    dag_id="bq_players_stats_current_dag",
     schedule_interval="0 0 * * *",
     default_args=default_args,
     catchup=False,
     max_active_runs=1,
-    tags=["spark-dtc-nba-de"],
+    tags=["dbt-dtc-nba-de"],
 ) as dag:
     format_to_parquet_task = PythonOperator(
         task_id="format_to_parquet_task",
@@ -134,4 +138,19 @@ with DAG(
         },
     )
 
-    (format_to_parquet_task >> local_to_gcs_task)
+    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
+        task_id="bigquery_external_table_task",
+        table_resource={
+            "tableReference": {
+                "projectId": PROJECT_ID,
+                "datasetId": BIGQUERY_DATASET,
+                "tableId": "players_game_stats_current_season",
+            },
+            "externalDataConfiguration": {
+                "sourceFormat": "PARQUET",
+                "sourceUris": [f"gs://{BUCKET}/raw/{parquet_file}"],
+            },
+        },
+    )
+
+    (format_to_parquet_task >> local_to_gcs_task >> bigquery_external_table_task)

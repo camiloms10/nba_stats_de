@@ -26,7 +26,7 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 parquet_file = "players.parquet"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "nba_stats_all")
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "PROD_NBA_STATS_ALL")
 REGION = "us-south1"
 DATAPROC_CLUSTER = os.getenv("GCP_DATAPROC_CLUSTER", "dataproc")
 
@@ -98,12 +98,12 @@ CLUSTER_CONFIG = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="bq_data_transformation_players_stats_dataproc_spark_job",
+    dag_id="bq_players_stats_dataproc_spark_job",
     schedule_interval="0 0 * * *",
     default_args=default_args,
     catchup=True,
     max_active_runs=1,
-    tags=["dtc-nba-de"],
+    tags=["spark-dtc-nba-de"],
 ) as dag:
     create_dataproc_cluster_task = DataprocCreateClusterOperator(
         task_id="create_dataproc_cluster_task",

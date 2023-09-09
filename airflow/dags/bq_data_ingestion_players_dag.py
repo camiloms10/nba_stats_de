@@ -23,7 +23,7 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 parquet_file = "players.parquet"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "nba_stats_all")
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "PROD_NBA_STATS_ALL")
 
 
 def format_to_parquet():
@@ -57,7 +57,7 @@ default_args = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="data_ingestion_players_dag",
+    dag_id="bq_players_dag",
     schedule_interval="@weekly",
     default_args=default_args,
     catchup=False,

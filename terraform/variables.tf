@@ -18,8 +18,12 @@ variable "storage_class" {
   default     = "STANDARD"
 }
 
-variable "BQ_DATASET" {
+variable "BQ_DATASET_DEV" {
   description = "BigQuery Dataset that raw data (from GCS) will be written to"
   type        = string
+}
 
+variable "BQ_DATASET_PROD" {
+  description = "BigQuery Dataset that dbt will use for during development"
+  type        = string
 }
