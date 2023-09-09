@@ -33,6 +33,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 models:
   staging:
+    schema: STG_NBA_STATS_ALL
     materialized: view
   core:
+    schema: PROD_NBA_STATS_ALL
     materialized: table
