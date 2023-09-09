@@ -1,0 +1,12 @@
+
+version: 2
+
+sources:
+    - name: staging
+      database: de-project-396820
+      schema: STG_NBA_STATS_ALL
+
+      tables:
+        - name: players_game_stats_current_season
+        - name: players_game_stats_past
+
