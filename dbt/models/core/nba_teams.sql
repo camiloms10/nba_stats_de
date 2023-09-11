@@ -1,7 +1,4 @@
 {{ config(materialized='table',
-        partition_by={
-            "field": "ID"
-        }
     )
 }}
 
