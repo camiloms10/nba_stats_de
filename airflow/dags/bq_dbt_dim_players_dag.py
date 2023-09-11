@@ -10,11 +10,11 @@ from airflow.providers.dbt.cloud.operators.dbt import (
 
 DBT_ACCOUNT_ID = int(os.environ.get("DBT_ACCOUNT_ID"))
 DBT_PROJECT_ID = int(os.environ.get("DBT_PROJECT_ID"))
-DBT_PS_JOB_ID = int(os.environ.get("DBT_PS_JOB_ID"))
+DBT_DIM_P_JOB_ID = int(os.environ.get("DBT_DIM_P_JOB_ID"))
 DBT_API_KEY_FILE = str(os.environ.get("DBT_API_KEY_FILE"))
 
 with DAG(
-    dag_id="dbt_players_stats_job",
+    dag_id="dbt_dim_players_job",
     default_args={"dbt_cloud_conn_id": "dbt_cloud", "account_id": DBT_ACCOUNT_ID},
     start_date=datetime(2021, 1, 1),
     schedule_interval=None,

@@ -11,6 +11,7 @@ from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
 )
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 
@@ -23,7 +24,7 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 parquet_file = "players.parquet"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "PROD_NBA_STATS_ALL")
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "STG_NBA_STATS_ALL")
 
 
 def format_to_parquet():
@@ -97,4 +98,21 @@ with DAG(
         },
     )
 
-    (format_to_parquet_task >> local_to_gcs_task >> bigquery_external_table_task)
+    delay_python_task = PythonOperator(
+        task_id="delay_python_task",
+        provide_context=True,
+        python_callable=lambda: time.sleep(60),
+    )
+
+    trigger_dbt_cloud_job_run = TriggerDagRunOperator(
+        task_id="trigger_dbt_cloud_job_run",
+        trigger_dag_id="dbt_dim_players_job",  # Ensure this equals the dag_id of the DAG to trigger
+    )
+
+    (
+        format_to_parquet_task
+        >> local_to_gcs_task
+        >> bigquery_external_table_task
+        >> delay_python_task
+        >> trigger_dbt_cloud_job_run
+    )
