@@ -87,7 +87,7 @@ from {{ source('staging','players_game_stats_past') }}
 
   -- this filter will only be applied on an incremental run
   -- (uses 'not in' to include records that are new playerid-gameid-teamid combinations)
-  where ID not in(select distinct ID from{{ this }})
+  where concat(PLAYER_ID,GAME_ID,TEAM_ID) not in(select distinct ID from{{ this }})
 
 {% endif %}
 
