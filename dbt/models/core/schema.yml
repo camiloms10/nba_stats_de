@@ -9,4 +9,6 @@ sources:
       tables:
         - name: players_game_stats_current_season
         - name: players_game_stats_past
+        - name: nba_teams
+        - name: nba_players
 
