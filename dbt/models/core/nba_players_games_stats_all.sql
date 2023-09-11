@@ -12,7 +12,7 @@
             "field": "DATE_TRUNC(GAME_DATE, YEAR)"
         },
         cluster_by=['TEAM_ID', 'PLAYER_ID'],
-        unique_key="unique_key"
+        unique_key="ID"
     )
 }}
 
@@ -45,7 +45,8 @@ cast (PF as integer) as PF,
 cast (PFD as integer) as PFD,
 cast (PTS as integer) as PTS,
 cast (PLUS_MINUS as integer) as PLUS_MINUS,
-concat(PLAYER_ID,GAME_ID,TEAM_ID) as unique_key
+concat(PLAYER_ID,GAME_ID,TEAM_ID) as ID,
+current_timestamp() as LAST_UPDATE
 from {{ source('staging','players_game_stats_current_season') }} 
 
 UNION ALL
@@ -78,14 +79,15 @@ cast (PF as integer) as PF,
 cast (PFD as integer) as PFD,
 cast (PTS as integer) as PTS,
 cast (PLUS_MINUS as integer) as PLUS_MINUS,
-concat(PLAYER_ID,GAME_ID,TEAM_ID) as unique_key
+concat(PLAYER_ID,GAME_ID,TEAM_ID) as ID,
+current_timestamp() as LAST_UPDATE
 from {{ source('staging','players_game_stats_past') }}
 
 {% if is_incremental() %}
 
   -- this filter will only be applied on an incremental run
   -- (uses 'not in' to include records that are new playerid-gameid-teamid combinations)
-  where unique_key not in(select distinct unique_key from{{ this }})
+  where ID not in(select distinct ID from{{ this }})
 
 {% endif %}
 
