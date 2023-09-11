@@ -11,6 +11,7 @@ from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
 )
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 
@@ -24,6 +25,7 @@ from nba_api.stats.library.parameters import (
 import pandas as pd
 
 from datetime import datetime, date
+import time
 from dateutil.relativedelta import relativedelta
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
@@ -153,4 +155,21 @@ with DAG(
         },
     )
 
-    (format_to_parquet_task >> local_to_gcs_task >> bigquery_external_table_task)
+    delay_python_task = PythonOperator(
+        task_id="delay_python_task",
+        provide_context=True,
+        python_callable=lambda: time.sleep(300),
+    )
+
+    trigger_dbt_cloud_job_run = TriggerDagRunOperator(
+        task_id="trigger_dbt_cloud_job_run",
+        trigger_dag_id="dbt_players_stats_job",  # Ensure this equals the dag_id of the DAG to trigger
+    )
+
+    (
+        format_to_parquet_task
+        >> local_to_gcs_task
+        >> bigquery_external_table_task
+        >> delay_python_task
+        >> trigger_dbt_cloud_job_run
+    )

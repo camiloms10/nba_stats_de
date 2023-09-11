@@ -1,8 +1,6 @@
 apache-airflow-providers-google
-apache-airflow[google]
+apache-airflow-providers-dbt-cloud
 pyarrow
 nba-api
-apache-airflow-providers-postgres
 pyspark==3.2.0
 pandas
-dbt_cloud_utils

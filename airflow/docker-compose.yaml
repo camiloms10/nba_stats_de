@@ -67,7 +67,6 @@ x-airflow-common:
     DBT_ACCOUNT_ID: ${DBT_ACCOUNT_ID}
     DBT_PROJECT_ID: ${DBT_PROJECT_ID}
     DBT_JOB_ID: ${DBT_JOB_ID}
-    #START_YEAR: ${START_YEAR}
     GCP_DATAPROC_CLUSTER: ${GCP_DATAPROC_CLUSTER}
 
   volumes:
@@ -75,6 +74,7 @@ x-airflow-common:
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./.google/credentials/:/.google/credentials:ro
+    - ..dbt/:/.dbt:ro
     - ./data:/opt/airflow/data
     - ../spark:/opt/airflow/sources
 

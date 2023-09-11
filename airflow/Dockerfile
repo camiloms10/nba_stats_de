@@ -1,8 +1,9 @@
 
 # First-time build can take upto 10 mins.
 
-FROM apache/airflow:2.2.3
+FROM apache/airflow:2.4.0
 COPY requirements.txt .
+RUN airflow db upgrade
 RUN pip install -r requirements.txt
 ENV AIRFLOW_HOME=/opt/airflow
 
@@ -59,6 +60,8 @@ RUN DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${
 ## Finish Spark files and Variables
 
 ## Start Python packages
+USER $AIRFLOW_UID
+
 COPY requirements.txt .
 ENV PYTHONPATH="/usr/local/bin/python"
 ENV PYTHONPATH="${SPARK_HOME}/python/:$PYTHONPATH"
