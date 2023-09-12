@@ -46,6 +46,7 @@ cast (PFD as integer) as PFD,
 cast (PTS as integer) as PTS,
 cast (PLUS_MINUS as integer) as PLUS_MINUS,
 concat(PLAYER_ID,GAME_ID,TEAM_ID) as ID,
+cast (GAME_TYPE as string) as GAME_TYPE,
 current_timestamp() as LAST_UPDATE
 from {{ source('staging','players_game_stats_current_season') }} 
 
@@ -80,6 +81,7 @@ cast (PFD as integer) as PFD,
 cast (PTS as integer) as PTS,
 cast (PLUS_MINUS as integer) as PLUS_MINUS,
 concat(PLAYER_ID,GAME_ID,TEAM_ID) as ID,
+cast (GAME_TYPE as string) as GAME_TYPE,
 current_timestamp() as LAST_UPDATE
 from {{ source('staging','players_game_stats_past') }}
 
