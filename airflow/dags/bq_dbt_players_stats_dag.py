@@ -23,7 +23,7 @@ with DAG(
 ) as dag:
     trigger_dbt_cloud_job_run = DbtCloudRunJobOperator(
         task_id="trigger_dbt_cloud_job_run",
-        job_id=DBT_JOB_ID,
+        job_id=DBT_PS_JOB_ID,
         check_interval=10,
         timeout=300,
     )

@@ -11,11 +11,13 @@ from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateExternalTableOperator,
 )
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
 
 from nba_api.stats.static import teams
 import pandas as pd
+import time
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")

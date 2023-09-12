@@ -77,11 +77,15 @@ def format_to_parquet():
     Seasons.sort()
 
     player_history_data = pd.DataFrame()
+    season_type_nullable_list = ["Regular Season", "Playoffs"]
     for season in Seasons:
-        try:
-            playerlogdata = playergamelogs.PlayerGameLogs(season_nullable=season)
+        for ss_type in season_type_nullable_list:
+            playerlogdata = playergamelogs.PlayerGameLogs(
+                season_nullable=season, season_type_nullable=ss_type
+            )
             playerlogdata = playerlogdata.player_game_logs.get_data_frame()
             playerlogdata = pd.DataFrame(playerlogdata)
+            playerlogdata["GAME_TYPE"] = ss_type
             playerlogdata[["FTA", "REB", "AST", "PF"]] = (
                 playerlogdata[["FTA", "REB", "AST", "PF"]].fillna(0).astype(int)
             )
@@ -91,10 +95,12 @@ def format_to_parquet():
             player_history_data = pd.concat(
                 [player_history_data, playerlogdata], ignore_index=True
             )
-            print(season + " - " + str(len(playerlogdata)) + " rows")
-        except Exception as e:
-            print("skipped" + season + "because of" + e)
-
+        print(
+            season
+            + " - "
+            + str(len(player_history_data))
+            + "total rows till this season"
+        )
     player_history_data = player_history_data.loc[
         (player_history_data["GAME_DATE"].dt.date < current_season_first_game_date)
     ]
