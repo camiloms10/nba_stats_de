@@ -61,7 +61,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li-->
+        <li><a href="#repository-organization">Repository Organization</a></li-->
         <li><a href="#data-sources">Data Sources</a></li>
       </ul>
     </li>
@@ -105,6 +105,7 @@ This project focuses on creating a data pipeline using multiple data engineering
 ## Getting Started
 
 
+
 ### Repository organization
 - \airflow: airflow files (docker-compose.yaml, Dockerfile, requirements, dags folder, etc.).  
 - \assets: pictures.  
@@ -117,15 +118,29 @@ This project focuses on creating a data pipeline using multiple data engineering
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+### Data Sources
+
+Formula 1 race data from the years 1940 till now. This data set is based on the public [NBA API](https://github.com/swar/nba_api/tree/master) 
+
+  * The NBA API contains lots of endpoints with following info:
+    * players
+    * teams
+    * scoreboard
+    * teamgamelogs
+    * playergamelogs
+    * LOTS MORE
+
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
 You can use this data to analyze:
-* How a driver or constructor has performed through time
-* Compare drivers and/or constructors based on F1 key metrics
-* Easily obtain the top performers for a specific F1 key metric
-* Ranking the constructor and drivers based on their performance 
+* How a player or team has performed through time
+* Compare players and/or teams based on NBA key metrics
+* Easily obtain the top performers for a specific NBA key metric
+* Ranking the player and teams based on their performance 
 * Etc.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
