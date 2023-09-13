@@ -74,6 +74,7 @@ def format_to_parquet():
         playerlogdata = playerlogdata.player_game_logs.get_data_frame()
         playerlogdata = pd.DataFrame(playerlogdata)
         playerlogdata["GAME_TYPE"] = ss_type
+        playerlogdata["SEASON"] = SeasonNullable.current_season
         playerlogdata[["FTA", "REB", "AST", "PF"]] = (
             playerlogdata[["FTA", "REB", "AST", "PF"]].fillna(0).astype(int)
         )
